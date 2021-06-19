@@ -12,10 +12,12 @@ class TextFieldPin extends StatefulWidget {
   final bool filled;
   final int codeLength;
   final filledColor;
+  final defaultColor;
   final TextStyle textStyle;
   final double margin;
   final InputBorder borderStyeAfterTextChange;
   final bool filledAfterTextChange;
+  final bool circleShape;
 
   TextFieldPin(
       {Key key,
@@ -24,10 +26,12 @@ class TextFieldPin extends StatefulWidget {
       this.borderStyle,
       this.filled = false,
       this.filledColor = Colors.grey,
+      this.defaultColor = Colors.white,
       this.codeLength = 5,
       this.textStyle,
       this.margin = 16,
       this.borderStyeAfterTextChange,
+      this.circleShape = false,
       this.filledAfterTextChange = false})
       : super(key: key);
 
@@ -50,6 +54,7 @@ class _TextFieldPinState extends State<TextFieldPin> {
   int _nextFocus = 1;
   String _result = "";
   InputBorder _borderAfterTextChange;
+  List<bool> statues = [];
 
   @override
   void dispose() {
@@ -81,6 +86,7 @@ class _TextFieldPinState extends State<TextFieldPin> {
       mListOtpData.add(OtpDefaultData(null));
       focusNode.add(new FocusNode());
       textController.add(new TextEditingController());
+      statues.add(false);
     }
   }
 
@@ -178,17 +184,21 @@ class _TextFieldPinState extends State<TextFieldPin> {
                     focusNode: focusNode[i],
                     textEditingController: textController[i],
                     border: _getBorder(i),
-                    isFilled: _isFilled(i),
+                    isFilled: statues[i],
                     onTextChange: (value) {
                       _otpNumberCallback(i, false);
-
+                      setState(() {
+                        statues[i] = value.toString().length > 0;
+                      });
                       if (value.toString().length > 0) {
                         if (_nextFocus != mListOtpData.length) {
                           _nextFocus = i + 1;
+                          if (_nextFocus > (mListOtpData.length - 1))
+                            _nextFocus = mListOtpData.length - 1;
                           FocusScope.of(context)
                               .requestFocus(focusNode[_nextFocus]);
                         } else {
-                          _nextFocus = (mListOtpData.length-1) - 1;
+                          _nextFocus = (mListOtpData.length - 1) - 1;
                         }
                       } else {
                         if (i >= 1) {
@@ -215,9 +225,11 @@ class _TextFieldPinState extends State<TextFieldPin> {
   }
 
   bool _isFilled(int i) {
-    return textController[i].text.length >= 1
+    bool value = textController[i].text.length >= 1
         ? widget.filledAfterTextChange
         : widget.filled;
+    print('index at ${i} -> ' + (value ? 'true' : 'false'));
+    return value;
   }
 
   Widget textFieldFill(
@@ -239,9 +251,12 @@ class _TextFieldPinState extends State<TextFieldPin> {
           textAlign: TextAlign.center,
           style: widget.textStyle,
           decoration: InputDecoration(
-              filled: isFilled,
+              filled: true,
+              fillColor: isFilled ? widget.filledColor : widget.defaultColor,
               border: border,
-              fillColor: widget.filledColor,
+              focusedBorder: border,
+              enabledBorder: border,
+              focusColor: Colors.transparent,
               isDense: true,
               counterText: ""),
           keyboardType: TextInputType.phone,
