@@ -106,7 +106,7 @@ class _TextFieldPinState extends State<TextFieldPin> {
   /// clear textController
   /// add listOtpData from smsCode value
   _autoFillCode() {
-    if (_smsCode != null) {
+    if (_smsCode != null && _smsCode.length >= widget.codeLength) {
       mListOtpData.clear();
       textController.clear();
       focusNode.clear();
@@ -116,9 +116,12 @@ class _TextFieldPinState extends State<TextFieldPin> {
         focusNode.add(new FocusNode());
         textController
             .add(new TextEditingController(text: mListOtpData[i].code));
+        statues[i] = true;
 
         _otpNumberCallback(i, true);
       }
+      // Request latest focus
+      FocusScope.of(context).requestFocus(focusNode[focusNode.length - 1]);
     }
   }
 
@@ -186,6 +189,12 @@ class _TextFieldPinState extends State<TextFieldPin> {
                     border: _getBorder(i),
                     isFilled: statues[i],
                     onTextChange: (value) {
+                      if (value.toString().length >= widget.codeLength) {
+                        _smsCode = value.toString();
+                        _autoFillCode();
+                        return;
+                      }
+                      // Else handle action
                       _otpNumberCallback(i, false);
                       setState(() {
                         statues[i] = value.toString().length > 0;
@@ -228,7 +237,6 @@ class _TextFieldPinState extends State<TextFieldPin> {
     bool value = textController[i].text.length >= 1
         ? widget.filledAfterTextChange
         : widget.filled;
-    print('index at ${i} -> ' + (value ? 'true' : 'false'));
     return value;
   }
 
