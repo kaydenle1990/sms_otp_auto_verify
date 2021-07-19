@@ -250,7 +250,7 @@ class _TextFieldPinState extends State<TextFieldPin> {
       child: TextFormField(
           focusNode: focusNode,
           autofocus: true,
-          maxLength: 1,
+          maxLength: 6,
           showCursor: false,
           scrollPadding: EdgeInsets.all(0),
           cursorWidth: 0,
